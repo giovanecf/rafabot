@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const ENDPOINT_API = "https://www.mercadobitcoin.net/api/";
+const ENDPOINT_API = "https://api.binance.com/";
 
 class MercadoBitcoin {
   constructor(config) {
@@ -21,7 +21,12 @@ class MercadoBitcoin {
     };
     try {
       const response = await axios.get(
-        ENDPOINT_API + this.config.CURRENCY + "/" + method
+        ENDPOINT_API + "api/v3/" + method + "/24hr",
+        {
+          params: {
+            symbol: this.config.CURRENCY,
+          },
+        }
       );
       return response.data;
     } catch (error) {
