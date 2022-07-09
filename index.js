@@ -152,7 +152,7 @@ bidPrice - highest price that a buyer is willing to pay for a goods.]
 askPrice - the price a seller states they will accept.
 lastPrice - is the actual price
 */
-const loop = async () => {
+async function loop() {
   const response = await infoApi.ticker();
   const { openPrice, lowPrice, highPrice, lastPrice, prevClosePrice } =
     response;
@@ -201,7 +201,7 @@ const loop = async () => {
 
   if (!DEALS_OF_THE_DAY.buy || !DEALS_OF_THE_DAY.sell)
     deal(CURRENT_CRYPTO_VALUE);
-};
+}
 
 var input = setInterval(() => {
   loop();
