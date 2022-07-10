@@ -75,6 +75,90 @@ const wallets_nonstop_ETH = [
   new Wallet(0, 0, 100, new Trade(coin_ETH, 0.1406), "ETH HIGH RISC NONSTOP"),
 ];
 
+const wallets_smart_gain_BTC = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.0031),
+    "BTC CONSERVATIVE SMART GAIN"
+  ),
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE SMART GAIN"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.1107),
+    "BTC HIGH RISC SMART GAIN"
+  ),
+];
+
+const wallets_smart_gain_ETH = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.0068),
+    "ETH CONSERVATIVE SMART GAIN"
+  ),
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE SMART GAIN"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.1406),
+    "ETH HIGH RISC SMART GAIN"
+  ),
+];
+
+const wallets_smart_gain_nonstop_BTC = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.0031),
+    "BTC CONSERVATIVE SMART GAIN NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.0555),
+    "BTC MODERATE SMART GAIN NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.1107),
+    "BTC HIGH RISC SMART GAIN NONSTOP"
+  ),
+];
+
+const wallets_smart_gain_nonstop_ETH = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.0068),
+    "ETH CONSERVATIVE SMART GAIN NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.0713),
+    "ETH MODERATE SMART GAIN NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.1406),
+    "ETH HIGH RISC SMART GAIN NONSTOP"
+  ),
+];
+
 const infoApi_BTC = new MercadoBitcoin({ currency: coin_BTC.name });
 const infoApi_ETH = new MercadoBitcoin({ currency: coin_ETH.name });
 
@@ -208,6 +292,7 @@ function deal_nonstop(price, wallets) {
       let current_among_crypto = element.balance.money / price;
       element.drawOutMoney(element.balance.money);
       element.depositCrypto(current_among_crypto);
+      element.hasBought = true;
 
       readWriteSync("logs.txt", obterLog(1, price, element), false);
     }
@@ -217,8 +302,18 @@ function deal_nonstop(price, wallets) {
       let current_among_money = element.balance.crypto * price;
       element.drawOutCrypto(element.balance.crypto);
       element.depositMoney(current_among_money);
+      element.hasSold = true;
 
       readWriteSync("logs.txt", obterLog(2, price, element), false);
+    }
+  });
+}
+
+function getNewOrderBuySell(price, wallets) {
+  wallets.forEach((element) => {
+    if (element.hasDailyTradeDone) {
+      element.current_trade.coin.open_price = price;
+      element.current_trade.generateNewOrderBuySell();
     }
   });
 }
@@ -249,6 +344,14 @@ async function loop() {
       readWriteSync("logs.txt", obterLog(3, price, element), false);
     });
 
+    wallets_smart_gain_BTC.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    wallets_smart_gain_nonstop_BTC.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
     wallets_ETH.forEach((element) => {
       readWriteSync("logs.txt", obterLog(3, price, element), false);
     });
@@ -257,14 +360,67 @@ async function loop() {
       readWriteSync("logs.txt", obterLog(3, price, element), false);
     });
 
-    coin_BTC.open_price = current_price_BTC;
-    coin_ETH.open_price = current_price_ETH;
+    wallets_smart_gain_ETH.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    wallets_smart_gain_nonstop_ETH.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    //CONFIG WALLETS
+    wallets_BTC.forEach((element) => {
+      if (element.hasDailyTradeDone) {
+        element.current_trade.coin.open_price = current_price_BTC;
+        element.current_trade.generateNewOrderBuySell();
+      }
+    });
+    wallets_smart_gain_BTC.forEach((element) => {
+      if (element.hasBought && !element.hasSold) {
+        element.current_trade.order_sell =
+          element.current_trade.coin.open_price *
+          Math.pow(
+            1 + element.current_trade.order_percent,
+            element.current_trade.daysWithoutSelling++
+          );
+      }
+      element.current_trade.coin.open_price = current_price_BTC;
+      element.current_trade.generateNewOrderBuySell();
+    });
+
+    wallets_ETH.forEach((element) => {
+      if (element.hasDailyTradeDone) {
+        element.current_trade.coin.open_price = current_price_ETH;
+        element.current_trade.generateNewOrderBuySell();
+      }
+    });
+    wallets_smart_gain_ETH.forEach((element) => {
+      if (element.hasBought && !element.hasSold) {
+        element.current_trade.order_sell =
+          element.current_trade.coin.open_price *
+          Math.pow(
+            1 + element.current_trade.order_percent,
+            element.current_trade.daysWithoutSelling++
+          );
+      }
+      element.current_trade.coin.open_price = current_price_ETH;
+      element.current_trade.generateNewOrderBuySell();
+    });
   }
+
+  getNewOrderBuySell(current_price_BTC, wallets_nonstop_BTC);
+  getNewOrderBuySell(current_price_BTC, wallets_smart_gain_nonstop_BTC);
+  getNewOrderBuySell(current_price_ETH, wallets_nonstop_ETH);
+  getNewOrderBuySell(current_price_ETH, wallets_smart_gain_nonstop_ETH);
 
   deal(current_price_BTC, wallets_BTC);
   deal_nonstop(current_price_BTC, wallets_nonstop_BTC);
+  deal(current_price_BTC, wallets_smart_gain_BTC);
+  deal_nonstop(current_price_BTC, wallets_smart_gain_nonstop_BTC);
   deal(current_price_ETH, wallets_ETH);
   deal_nonstop(current_price_ETH, wallets_nonstop_ETH);
+  deal(current_price_ETH, wallets_smart_gain_ETH);
+  deal_nonstop(current_price_ETH, wallets_smart_gain_nonstop_ETH);
 
   console.log(
     "It's " +

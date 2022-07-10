@@ -6,6 +6,14 @@ class Trade {
       this.coin.open_price - this.coin.open_price * this.order_percent;
     this.order_sell =
       this.coin.open_price + this.coin.open_price * this.order_percent;
+    this.daysWithoutSelling = 1;
+  }
+
+  generateNewOrderBuySell() {
+    this.order_buy =
+      this.coin.open_price - this.coin.open_price * this.order_percent;
+    this.order_sell =
+      this.coin.open_price + this.coin.open_price * this.order_percent;
   }
 
   //predenting that these functions does not exist
