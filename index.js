@@ -35,20 +35,58 @@ Carteira
 - Operacao Atual
 */
 
-const coin_BTC = new Coin("BTCUSDT", 21581.1);
-const coin_ETH = new Coin("ETHUSDT", 1216.01);
+const CONSOLE_IT = true;
+let FIRST_CYCLE_PASSED = false;
+const coin_data_BTC = { name: "BTCUSDT", openValue: 21581.1 };
+const coin_data_ETH = { name: "ETHUSDT", openValue: 1216.01 };
 
 //One wallet for every strategy
 const wallets_BTC = [
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0031), "BTC CONSERVATIVE"),
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE"),
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.1107), "BTC HIGH RISC"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0031),
+    "BTC CONSERVATIVE"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0555),
+    "BTC MODERATE"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.1107),
+    "BTC HIGH RISC"
+  ),
 ];
 
 const wallets_ETH = [
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0068), "ETH CONSERVATIVE"),
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE"),
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.1406), "ETH HIGH RISC"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0068),
+    "ETH CONSERVATIVE"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0713),
+    "ETH MODERATE"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.1406),
+    "ETH HIGH RISC"
+  ),
 ];
 
 const wallets_nonstop_BTC = [
@@ -56,11 +94,23 @@ const wallets_nonstop_BTC = [
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.0031),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0031),
     "BTC CONSERVATIVE NONSTOP"
   ),
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE NONSTOP"),
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.1107), "BTC HIGH RISC NONSTOP"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0555),
+    "BTC MODERATE NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.1107),
+    "BTC HIGH RISC NONSTOP"
+  ),
 ];
 
 const wallets_nonstop_ETH = [
@@ -68,11 +118,23 @@ const wallets_nonstop_ETH = [
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.0068),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0068),
     "ETH CONSERVATIVE NONSTOP"
   ),
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE NONSTOP"),
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.1406), "ETH HIGH RISC NONSTOP"),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0713),
+    "ETH MODERATE NONSTOP"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.1406),
+    "ETH HIGH RISC NONSTOP"
+  ),
 ];
 
 const wallets_smart_gain_BTC = [
@@ -80,15 +142,21 @@ const wallets_smart_gain_BTC = [
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.0031),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0031),
     "BTC CONSERVATIVE SMART GAIN"
   ),
-  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE SMART GAIN"),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.1107),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0555),
+    "BTC MODERATE SMART GAIN"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.1107),
     "BTC HIGH RISC SMART GAIN"
   ),
 ];
@@ -98,15 +166,21 @@ const wallets_smart_gain_ETH = [
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.0068),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0068),
     "ETH CONSERVATIVE SMART GAIN"
   ),
-  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE SMART GAIN"),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.1406),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0713),
+    "ETH MODERATE SMART GAIN"
+  ),
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.1406),
     "ETH HIGH RISC SMART GAIN"
   ),
 ];
@@ -116,21 +190,21 @@ const wallets_smart_gain_nonstop_BTC = [
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.0031),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0031),
     "BTC CONSERVATIVE SMART GAIN NONSTOP"
   ),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.0555),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.0555),
     "BTC MODERATE SMART GAIN NONSTOP"
   ),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_BTC, 0.1107),
+    new Trade(new Coin(coin_data_BTC.name, coin_data_BTC.openValue), 0.1107),
     "BTC HIGH RISC SMART GAIN NONSTOP"
   ),
 ];
@@ -140,27 +214,29 @@ const wallets_smart_gain_nonstop_ETH = [
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.0068),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0068),
     "ETH CONSERVATIVE SMART GAIN NONSTOP"
   ),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.0713),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.0713),
     "ETH MODERATE SMART GAIN NONSTOP"
   ),
   new Wallet(
     0,
     0,
     100,
-    new Trade(coin_ETH, 0.1406),
+    new Trade(new Coin(coin_data_ETH.name, coin_data_ETH.openValue), 0.1406),
     "ETH HIGH RISC SMART GAIN NONSTOP"
   ),
 ];
 
-const infoApi_BTC = new MercadoBitcoin({ currency: coin_BTC.name });
-const infoApi_ETH = new MercadoBitcoin({ currency: coin_ETH.name });
+const infoApi_BTC = new MercadoBitcoin({ currency: coin_data_BTC.name });
+const infoApi_ETH = new MercadoBitcoin({
+  currency: coin_data_ETH.name,
+});
 
 function sleep(delay) {
   var start = new Date().getTime();
@@ -180,7 +256,7 @@ function readWriteSync(file, text, rewrite) {
 
   fs.writeFileSync(file, newValue, "utf-8");
 
-  console.log("readFileSync complete");
+  //console.log("Log saved!");
 }
 
 function obterLog(type, price, wallet) {
@@ -311,9 +387,11 @@ function deal_nonstop(price, wallets) {
 
 function getNewOrderBuySell(price, wallets) {
   wallets.forEach((element) => {
-    if (element.hasDailyTradeDone) {
+    if (element.hasDailyTradeDone || !FIRST_CYCLE_PASSED) {
       element.current_trade.coin.open_price = price;
       element.current_trade.generateNewOrderBuySell();
+      element.hasBought = false;
+      element.hasSold = false;
     }
   });
 }
@@ -412,6 +490,7 @@ async function loop() {
   getNewOrderBuySell(current_price_BTC, wallets_smart_gain_nonstop_BTC);
   getNewOrderBuySell(current_price_ETH, wallets_nonstop_ETH);
   getNewOrderBuySell(current_price_ETH, wallets_smart_gain_nonstop_ETH);
+  FIRST_CYCLE_PASSED = true;
 
   deal(current_price_BTC, wallets_BTC);
   deal_nonstop(current_price_BTC, wallets_nonstop_BTC);
@@ -422,17 +501,139 @@ async function loop() {
   deal(current_price_ETH, wallets_smart_gain_ETH);
   deal_nonstop(current_price_ETH, wallets_smart_gain_nonstop_ETH);
 
-  console.log(
-    "It's " +
-      clock.getHours() +
-      ":" +
-      clock.getMinutes() +
-      ":" +
-      clock.getSeconds()
-  );
-  console.log("BTC: " + parseFloat(current_price_BTC).toFixed(4) + "USDT");
-  console.log("ETH: " + parseFloat(current_price_ETH).toFixed(4) + "USDT");
-  console.log("\n");
+  if (CONSOLE_IT) {
+    wallets_BTC.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_nonstop_BTC.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_smart_gain_BTC.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_smart_gain_nonstop_BTC.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_ETH.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_nonstop_ETH.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_smart_gain_ETH.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    wallets_smart_gain_nonstop_ETH.forEach((element) =>
+      console.log(
+        "(" +
+          element.description +
+          ") - " +
+          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
+          "USDT" +
+          " | " +
+          element.current_trade.coin.open_price +
+          " : " +
+          element.current_trade.order_buy +
+          " - " +
+          element.current_trade.order_sell
+      )
+    );
+    console.log(
+      "It's " +
+        clock.getHours() +
+        ":" +
+        clock.getMinutes() +
+        ":" +
+        clock.getSeconds()
+    );
+    console.log("BTC: " + parseFloat(current_price_BTC).toFixed(4) + "USDT");
+    console.log("ETH: " + parseFloat(current_price_ETH).toFixed(4) + "USDT");
+    console.log("\n");
+  }
 }
 
 var input = setInterval(() => {
