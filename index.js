@@ -459,7 +459,7 @@ async function loop() {
           element.current_trade.coin.open_price *
           Math.pow(
             1 + element.current_trade.order_percent,
-            element.current_trade.daysWithoutSelling++
+            ++element.current_trade.daysWithoutSelling
           );
       }
       element.current_trade.coin.open_price = current_price_BTC;
@@ -478,7 +478,7 @@ async function loop() {
           element.current_trade.coin.open_price *
           Math.pow(
             1 + element.current_trade.order_percent,
-            element.current_trade.daysWithoutSelling++
+            ++element.current_trade.daysWithoutSelling
           );
       }
       element.current_trade.coin.open_price = current_price_ETH;
