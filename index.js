@@ -35,8 +35,8 @@ Carteira
 - Operacao Atual
 */
 
-const coin_BTC = new Coin("BTCUSDT", 20807.42);
-const coin_ETH = new Coin("ETHUSDT", 1165.89);
+const coin_BTC = new Coin("BTCUSDT", 21581.1);
+const coin_ETH = new Coin("ETHUSDT", 1216.01);
 
 //One wallet for every strategy
 const wallets_BTC = [
@@ -266,7 +266,17 @@ async function loop() {
   deal(current_price_ETH, wallets_ETH);
   deal_nonstop(current_price_ETH, wallets_nonstop_ETH);
 
-  console.log(current_price_BTC, " - ", current_price_ETH);
+  console.log(
+    "It's " +
+      clock.getHours() +
+      ":" +
+      clock.getMinutes() +
+      ":" +
+      clock.getSeconds()
+  );
+  console.log("BTC: " + parseFloat(current_price_BTC).toFixed(4) + "USDT");
+  console.log("ETH: " + parseFloat(current_price_ETH).toFixed(4) + "USDT");
+  console.log("\n");
 }
 
 var input = setInterval(() => {
