@@ -1,55 +1,105 @@
 require("dotenv").config({ path: __dirname + "/.env" });
 const { MercadoBitcoin } = require("./api");
 const { Wallet } = require("./wallet");
+const { Coin } = require("./coin");
+const { Trade } = require("./trade");
 let fs = require("fs");
 
-let currency = "";
-let OPEN_DAY_PRICE = 0;
-let ORDER_PERCENT = 0;
+/*
+Estratégias:
+() Conservador once
+() Moderador once
+() Alto risco once
 
-if (false) {
-  currency = "BTCUSDT";
-  OPEN_DAY_PRICE = 21622.98;
-  ORDER_PERCENT = 0.0031;
-} else if (true) {
-  currency = "ETHUSDT-MOD";
-  OPEN_DAY_PRICE = 1237.23;
-  ORDER_PERCENT = 0.0713;
-} else {
-  currency = "ETHUSDT";
-  OPEN_DAY_PRICE = 1237.23;
-  ORDER_PERCENT = 0.0068;
-}
+() Conservador nonstop
+() Moderador nonstop
+() Alto risco nonstop
 
-let CURRENT_CRYPTO_VALUE = OPEN_DAY_PRICE;
-let DEALS_OF_THE_DAY = { buy: false, sell: false };
+() Implementar operação
 
-const infoApi = new MercadoBitcoin({ currency });
 
-const wallets = [new Wallet(1, 0, 100)];
+Moeda
+- nome
+- preco
+- preco inicial
 
-function createNewWallet(walletsArray) {
-  wallets.push(new Wallet(1, 0, 100));
-  return wallets.length;
-}
+Operacao
+- Moeda
+- Porcentagem de ordem compra/venda
+- Ordem de Compra
+- Ordem de Venda
+
+Carteira
+- Valor em moeda
+- Valor em crypto
+- Operacao Atual
+*/
+
+const coin_BTC = new Coin("BTCUSDT", 20807.42);
+const coin_ETH = new Coin("ETHUSDT", 1165.89);
+
+//One wallet for every strategy
+const wallets_BTC = [
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0031), "BTC CONSERVATIVE"),
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE"),
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.1107), "BTC HIGH RISC"),
+];
+
+const wallets_ETH = [
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0068), "ETH CONSERVATIVE"),
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE"),
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.1406), "ETH HIGH RISC"),
+];
+
+const wallets_nonstop_BTC = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_BTC, 0.0031),
+    "BTC CONSERVATIVE NONSTOP"
+  ),
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.0555), "BTC MODERATE NONSTOP"),
+  new Wallet(0, 0, 100, new Trade(coin_BTC, 0.1107), "BTC HIGH RISC NONSTOP"),
+];
+
+const wallets_nonstop_ETH = [
+  new Wallet(
+    0,
+    0,
+    100,
+    new Trade(coin_ETH, 0.0068),
+    "ETH CONSERVATIVE NONSTOP"
+  ),
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.0713), "ETH MODERATE NONSTOP"),
+  new Wallet(0, 0, 100, new Trade(coin_ETH, 0.1406), "ETH HIGH RISC NONSTOP"),
+];
+
+const infoApi_BTC = new MercadoBitcoin({ currency: coin_BTC.name });
+const infoApi_ETH = new MercadoBitcoin({ currency: coin_ETH.name });
 
 function sleep(delay) {
   var start = new Date().getTime();
   while (new Date().getTime() < start + delay);
 }
 
-function readWriteSync(text) {
-  var data = fs.readFileSync("logs.txt", "utf-8");
+function readWriteSync(file, text, rewrite) {
+  var data = fs.readFileSync(file, "utf-8");
+  var newValue = "";
 
-  if (data.length > 0) var newValue = data + "\n" + text;
-  else var newValue = text;
+  if (rewrite) {
+    newValue = text;
+  } else {
+    if (data.length > 0) newValue = data + "\n" + text;
+    else newValue = text;
+  }
 
-  fs.writeFileSync("logs.txt", newValue, "utf-8");
+  fs.writeFileSync(file, newValue, "utf-8");
 
   console.log("readFileSync complete");
 }
 
-function obterLog(type, price) {
+function obterLog(type, price, wallet) {
   /*
   type
   1: buy log
@@ -68,22 +118,22 @@ function obterLog(type, price) {
   } else {
     log_type_text =
       "(_|-) BALANCE: " +
-      getBalanceInCash() +
+      getBalanceInCash(price, wallet) +
       "USDT" +
       " :: currentPrice(" +
-      CURRENT_CRYPTO_VALUE +
+      price +
       ") | openPrice(" +
-      OPEN_DAY_PRICE +
+      wallet.current_trade.coin.open_price +
       ") | buyPrice(" +
-      parseFloat(OPEN_DAY_PRICE - OPEN_DAY_PRICE * ORDER_PERCENT).toFixed(4) +
+      parseFloat(wallet.current_trade.order_buy).toFixed(4) +
       ") | sellPrice(" +
-      parseFloat(OPEN_DAY_PRICE + OPEN_DAY_PRICE * ORDER_PERCENT).toFixed(4) +
+      parseFloat(wallet.current_trade.order_sell).toFixed(4) +
       ")";
   }
 
   text =
     "(" +
-    currency +
+    wallet.description +
     ")" +
     "[" +
     clock.getDate() +
@@ -97,54 +147,80 @@ function obterLog(type, price) {
     clock.getMinutes() +
     ":" +
     clock.getSeconds() +
-    "]";
-  text += " - " + log_type_text + "\r\n";
+    "]" +
+    " - " +
+    log_type_text +
+    "\r\n";
 
   return text;
 }
 
-function getBalanceInCash() {
-  return (
-    wallets[0].balance.money + wallets[0].balance.crypto * CURRENT_CRYPTO_VALUE
-  );
+function getBalanceInCash(price, wallet) {
+  return wallet.balance.money + wallet.balance.crypto * price;
 }
 
-function deal(price) {
+function deal(price, wallets) {
+  /*
+  First strategy:
+    Buy before sell, and
+    sell after bought.
+*/
+
+  wallets.forEach((element) => {
+    let order_buy = element.current_trade.order_buy;
+    let order_sell = element.current_trade.order_sell;
+
+    //HERE I BUY: CHECK BUY PRICE AND IF I HAVE MONEY TO BUY IT
+    if (price <= order_buy && element.balance.money > 0 && !element.hasBought) {
+      let current_among_crypto = element.balance.money / price;
+      element.drawOutMoney(element.balance.money);
+      element.depositCrypto(current_among_crypto);
+      element.hasBought = true;
+
+      readWriteSync("logs.txt", obterLog(1, price, element), false);
+    }
+
+    //HERE I SELL: CHECK PRICE TO SELL AND IF I HAVE CRIPTO TO SELL IT
+    if (price >= order_sell && element.balance.crypto > 0 && !element.hasSold) {
+      let current_among_money = element.balance.crypto * price;
+      element.drawOutCrypto(element.balance.crypto);
+      element.depositMoney(current_among_money);
+      element.hasSold = true;
+
+      readWriteSync("logs.txt", obterLog(2, price, element), false);
+    }
+  });
+}
+
+function deal_nonstop(price, wallets) {
   /*
   First strategy:
     Buy before sell, and
     sell after bought.
   */
-  let buy_order = OPEN_DAY_PRICE - OPEN_DAY_PRICE * ORDER_PERCENT;
-  let sell_order = OPEN_DAY_PRICE + OPEN_DAY_PRICE * ORDER_PERCENT;
 
-  //HERE I BUY: CHECK BUY PRICE AND IF I HAVE MONEY TO BUY IT
-  if (
-    price <= buy_order &&
-    wallets[0].balance.money > 0 &&
-    !DEALS_OF_THE_DAY.buy
-  ) {
-    let current_among_crypto = wallets[0].balance.money / price;
-    wallets[0].drawOutMoney(wallets[0].balance.money);
-    wallets[0].depositCrypto(current_among_crypto);
-    DEALS_OF_THE_DAY.buy = true;
+  wallets.forEach((element) => {
+    let order_buy = element.current_trade.order_buy;
+    let order_sell = element.current_trade.order_sell;
 
-    readWriteSync(obterLog(1, price));
-  }
+    //HERE I BUY: CHECK BUY PRICE AND IF I HAVE MONEY TO BUY IT
+    if (price <= order_buy && element.balance.money > 0) {
+      let current_among_crypto = element.balance.money / price;
+      element.drawOutMoney(element.balance.money);
+      element.depositCrypto(current_among_crypto);
 
-  //HERE I SELL: CHECK PRICE TO SELL AND IF I HAVE CRIPTO TO SELL IT
-  if (
-    price >= sell_order &&
-    wallets[0].balance.crypto > 0 &&
-    !DEALS_OF_THE_DAY.sell
-  ) {
-    let current_among_money = wallets[0].balance.crypto * price;
-    wallets[0].drawOutCrypto(wallets[0].balance.crypto);
-    wallets[0].depositMoney(current_among_money);
-    DEALS_OF_THE_DAY.sell = true;
+      readWriteSync("logs.txt", obterLog(1, price, element), false);
+    }
 
-    readWriteSync(obterLog(2, price));
-  }
+    //HERE I SELL: CHECK PRICE TO SELL AND IF I HAVE CRIPTO TO SELL IT
+    if (price >= order_sell && element.balance.crypto > 0) {
+      let current_among_money = element.balance.crypto * price;
+      element.drawOutCrypto(element.balance.crypto);
+      element.depositMoney(current_among_money);
+
+      readWriteSync("logs.txt", obterLog(2, price, element), false);
+    }
+  });
 }
 
 /* 
@@ -153,54 +229,44 @@ askPrice - the price a seller states they will accept.
 lastPrice - is the actual price
 */
 async function loop() {
-  const response = await infoApi.ticker();
-  const { openPrice, lowPrice, highPrice, lastPrice, prevClosePrice } =
-    response;
-  CURRENT_CRYPTO_VALUE = lastPrice;
+  const response_BTC = await infoApi_BTC.ticker();
+  const response_ETH = await infoApi_ETH.ticker();
+
+  const current_price_BTC = response_BTC.lastPrice;
+  const current_price_ETH = response_ETH.lastPrice;
 
   let clock = new Date(Date.now());
   if (
-    clock.getHours() == 21 &&
+    clock.getHours() + clock.getTimezoneOffset() / 60 == 24 &&
     clock.getMinutes() == 00 &&
     clock.getSeconds() == 00
   ) {
-    DEALS_OF_THE_DAY = { buy: false, sell: false };
-    OPEN_DAY_PRICE = CURRENT_CRYPTO_VALUE;
-    readWriteSync(obterLog(3, 0));
+    wallets_BTC.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    wallets_nonstop_BTC.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    wallets_ETH.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    wallets_nonstop_ETH.forEach((element) => {
+      readWriteSync("logs.txt", obterLog(3, price, element), false);
+    });
+
+    coin_BTC.open_price = current_price_BTC;
+    coin_ETH.open_price = current_price_ETH;
   }
 
-  console.log("\n");
-  console.log(
-    "It's " +
-      clock.getHours() +
-      ":" +
-      clock.getMinutes() +
-      ":" +
-      clock.getSeconds()
-  );
-  console.log("BALANCE ");
-  console.log("$" + getBalanceInCash().toFixed(4));
-  console.log(
-    "$" +
-      wallets[0].balance.money.toFixed(4) +
-      " | " +
-      wallets[0].balance.crypto.toFixed(8) +
-      currency
-  );
-  console.log("Bought:", DEALS_OF_THE_DAY.buy, "Sold:", DEALS_OF_THE_DAY.sell);
-  console.log("currentPrice | openPrice | buyPrice | sellPrice");
-  console.log(
-    parseFloat(CURRENT_CRYPTO_VALUE).toFixed(4),
-    "     ",
-    parseFloat(OPEN_DAY_PRICE).toFixed(4),
-    "   ",
-    parseFloat(OPEN_DAY_PRICE - OPEN_DAY_PRICE * ORDER_PERCENT).toFixed(4),
-    "   ",
-    parseFloat(OPEN_DAY_PRICE + OPEN_DAY_PRICE * ORDER_PERCENT).toFixed(4)
-  );
+  deal(current_price_BTC, wallets_BTC);
+  deal_nonstop(current_price_BTC, wallets_nonstop_BTC);
+  deal(current_price_ETH, wallets_ETH);
+  deal_nonstop(current_price_ETH, wallets_nonstop_ETH);
 
-  if (!DEALS_OF_THE_DAY.buy || !DEALS_OF_THE_DAY.sell)
-    deal(CURRENT_CRYPTO_VALUE);
+  console.log(current_price_BTC, " - ", current_price_ETH);
 }
 
 var input = setInterval(() => {
