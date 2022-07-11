@@ -415,35 +415,35 @@ async function loop() {
     clock.getSeconds() == 00
   ) {
     wallets_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
     });
 
     wallets_nonstop_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
     });
 
     wallets_smart_gain_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
     });
 
     wallets_smart_gain_nonstop_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
     });
 
     wallets_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
     });
 
     wallets_nonstop_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
     });
 
     wallets_smart_gain_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
     });
 
     wallets_smart_gain_nonstop_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, price, element), false);
+      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
     });
 
     //CONFIG WALLETS
