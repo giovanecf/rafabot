@@ -35,10 +35,10 @@ Carteira
 - Operacao Atual
 */
 
-const CONSOLE_IT = false;
+const CONSOLE_IT = true;
 let FIRST_CYCLE_PASSED = false;
-const coin_data_BTC = { name: "BTCUSDT", openValue: 19323.91 };
-const coin_data_ETH = { name: "ETHUSDT", openValue: 1038.19 };
+const coin_data_BTC = { name: "BTCUSDT", openValue: 20818.54 };
+const coin_data_ETH = { name: "ETHUSDT", openValue: 1166.09 };
 
 //One wallet for every strategy
 const wallets_BTC = [
@@ -396,246 +396,99 @@ function getNewOrderBuySell(price, wallets) {
   });
 }
 
+function getPastDataBTC() {
+  var data = fs.readFileSync("./data/all_time_1_eth.csv", "utf8");
+
+  data = data.split("\r\n");
+
+  for (let i in data) {
+    data[i] = data[i].split("\n");
+  }
+
+  let days = data[0];
+  days.shift();
+
+  console.log(days);
+  //'Open time,Open,High,Low,Close,Volume',
+  //'2021-02-24 21:00,49676.21,52041.73,46674.34,47073.73,83310.673121',
+  return days;
+}
+function dealManual(dataDay, wallets) {
+  wallets.forEach((element) => {
+    let order_buy = element.current_trade.order_buy;
+    let order_sell = element.current_trade.order_sell;
+
+    let open = dataDay.split(",")[1];
+    let high = dataDay.split(",")[2];
+    let low = dataDay.split(",")[3];
+    //HERE I BUY: CHECK BUY PRICE AND IF I HAVE MONEY TO BUY IT
+    if (low <= order_buy && element.balance.money > 0) {
+      let current_among_crypto = element.balance.money / order_buy;
+      element.drawOutMoney(element.balance.money);
+      element.depositCrypto(current_among_crypto);
+      element.hasBought = true;
+    }
+
+    //HERE I SELL: CHECK PRICE TO SELL AND IF I HAVE CRIPTO TO SELL IT
+    if (high >= order_sell && element.balance.crypto > 0) {
+      let current_among_money = element.balance.crypto * order_sell;
+      element.drawOutCrypto(element.balance.crypto);
+      element.depositMoney(current_among_money);
+      element.hasSold = true;
+    }
+
+    if (element.hasDailyTradeDone || !FIRST_CYCLE_PASSED) {
+      element.tradedCounter++;
+      element.hasBought = false;
+      element.hasSold = false;
+    }
+  });
+}
 /* 
 bidPrice - highest price that a buyer is willing to pay for a goods.]
 askPrice - the price a seller states they will accept.
 lastPrice - is the actual price
 */
 async function loop() {
-  const response_BTC = await infoApi_BTC.ticker();
-  const response_ETH = await infoApi_ETH.ticker();
+  let arr = getPastDataBTC();
 
-  const current_price_BTC = parseFloat(response_BTC.lastPrice);
-  const current_price_ETH = parseFloat(response_ETH.lastPrice);
+  arr.forEach((element) => {
+    //console.log(element);
 
-  let clock = new Date(Date.now());
-  if (
-    24 - (clock.getHours() + clock.getTimezoneOffset() / 60) == 00 &&
-    clock.getMinutes() == 00 &&
-    clock.getSeconds() == 00
-  ) {
+    var elementData = element;
+
     wallets_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
-    });
+      let open = parseFloat(elementData.split(",")[1]);
 
-    wallets_nonstop_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
-    });
-
-    wallets_smart_gain_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
-    });
-
-    wallets_smart_gain_nonstop_BTC.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_BTC, element), false);
-    });
-
-    wallets_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
-    });
-
-    wallets_nonstop_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
-    });
-
-    wallets_smart_gain_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
-    });
-
-    wallets_smart_gain_nonstop_ETH.forEach((element) => {
-      readWriteSync("logs.txt", obterLog(3, current_price_ETH, element), false);
-    });
-
-    //CONFIG WALLETS
-    wallets_BTC.forEach((element) => {
-      if (element.hasDailyTradeDone) {
-        element.current_trade.coin.open_price = current_price_BTC;
-        element.current_trade.generateNewOrderBuySell();
-      }
-    });
-    wallets_smart_gain_BTC.forEach((element) => {
-      if (element.hasBought && !element.hasSold) {
-        element.current_trade.order_sell =
-          element.current_trade.coin.open_price *
-          Math.pow(
-            1 + element.current_trade.order_percent,
-            ++element.current_trade.daysWithoutSelling
-          );
-      }
-      element.current_trade.coin.open_price = current_price_BTC;
+      element.current_trade.coin.open_price = open;
       element.current_trade.generateNewOrderBuySell();
+
+      console.log(
+        element.description,
+        "-",
+        element.current_trade.coin.open_price,
+        element.current_trade.order_buy,
+        element.current_trade.order_sell
+      );
     });
+    console.log("-----------------------------");
+    console.log("Current value: ", elementData.split(",")[1]);
 
-    wallets_ETH.forEach((element) => {
-      if (element.hasDailyTradeDone) {
-        element.current_trade.coin.open_price = current_price_ETH;
-        element.current_trade.generateNewOrderBuySell();
-      }
-    });
-    wallets_smart_gain_ETH.forEach((element) => {
-      if (element.hasBought && !element.hasSold) {
-        element.current_trade.order_sell =
-          element.current_trade.coin.open_price *
-          Math.pow(
-            1 + element.current_trade.order_percent,
-            ++element.current_trade.daysWithoutSelling
-          );
-      }
-      element.current_trade.coin.open_price = current_price_ETH;
-      element.current_trade.generateNewOrderBuySell();
-    });
-  }
+    FIRST_CYCLE_PASSED = true;
 
-  getNewOrderBuySell(current_price_BTC, wallets_nonstop_BTC);
-  getNewOrderBuySell(current_price_BTC, wallets_smart_gain_nonstop_BTC);
-  getNewOrderBuySell(current_price_ETH, wallets_nonstop_ETH);
-  getNewOrderBuySell(current_price_ETH, wallets_smart_gain_nonstop_ETH);
-  FIRST_CYCLE_PASSED = true;
+    dealManual(element, wallets_BTC);
+  });
 
-  deal(current_price_BTC, wallets_BTC);
-  deal_nonstop(current_price_BTC, wallets_nonstop_BTC);
-  deal(current_price_BTC, wallets_smart_gain_BTC);
-  deal_nonstop(current_price_BTC, wallets_smart_gain_nonstop_BTC);
-  deal(current_price_ETH, wallets_ETH);
-  deal_nonstop(current_price_ETH, wallets_nonstop_ETH);
-  deal(current_price_ETH, wallets_smart_gain_ETH);
-  deal_nonstop(current_price_ETH, wallets_smart_gain_nonstop_ETH);
-
-  if (CONSOLE_IT) {
-    wallets_BTC.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_nonstop_BTC.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_smart_gain_BTC.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_smart_gain_nonstop_BTC.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_BTC, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_ETH.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_nonstop_ETH.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_smart_gain_ETH.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
-    wallets_smart_gain_nonstop_ETH.forEach((element) =>
-      console.log(
-        "(" +
-          element.description +
-          ") - " +
-          parseFloat(getBalanceInCash(current_price_ETH, element)).toFixed(4) +
-          "USDT" +
-          " | " +
-          element.current_trade.coin.open_price +
-          " : " +
-          element.current_trade.order_buy +
-          " - " +
-          element.current_trade.order_sell
-      )
-    );
+  wallets_BTC.forEach((element) => {
     console.log(
-      "It's " +
-        clock.getHours() +
-        ":" +
-        clock.getMinutes() +
-        ":" +
-        clock.getSeconds()
+      "Hit: ",
+      element.tradedCounter - 1 + "/" + arr.length,
+      "-->",
+      ((element.tradedCounter - 1) / arr.length) * 100 + "%"
     );
-    console.log("BTC: " + parseFloat(current_price_BTC).toFixed(4) + "USDT");
-    console.log("ETH: " + parseFloat(current_price_ETH).toFixed(4) + "USDT");
-    console.log("\n");
-  }
+    console.log("Balance: ", element.balance);
+  });
 }
 
-var input = setInterval(() => {
-  loop();
-}, 1000);
+//var input = setInterval(() => { loop();}, 1000);
+loop();

@@ -7,6 +7,7 @@ class Wallet {
     this.description = description;
     this.hasBought = false;
     this.hasSold = false;
+    this.tradedCounter = 0;
   }
 
   depositCrypto(value) {
