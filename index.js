@@ -410,7 +410,7 @@ async function loop() {
 
   let clock = new Date(Date.now());
   if (
-    24 - (clock.getHours() + clock.getTimezoneOffset() / 60) == 00 &&
+    24 - (clock.getHours() + clock.getTimezoneOffset() / 60) == 24 &&
     clock.getMinutes() == 00 &&
     clock.getSeconds() == 00
   ) {
